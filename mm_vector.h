@@ -16,20 +16,27 @@
 #include <stdint.h>
 typedef struct MM_VECTOR
 {
-    uint16_t size;     /*!<缓存区大小 */
-    uint16_t capacity; /*!< 当前容量 */
-    uint8_t *data;     /*!< 数据开始地址 */
+    uint16_t size;      /*!< 缓存区大小 */
+    uint16_t type_size; /*!< 存储类型的大小 */
+    uint16_t capacity;  /*!< 当前容量 */
+    uint8_t *data;      /*!< 数据开始地址 */
 } mm_vector_t;
 
-#define MM_VEC_PUSH(self, TYPEDEF, item_ptr, N) mm_vector_push(self, item_ptr, sizeof(TYPEDEF) * N);
 
-bool mm_vector_init(mm_vector_t *self, uint8_t *buff, size_t size);
-bool mm_vector_push(mm_vector_t *self, uint8_t *buff, size_t size);
-size_t mm_vector_pop(mm_vector_t *self, uint8_t *buff, size_t size);
+/* 遍历链表 */
+#define mm_vector_for_each(pos, type, head)                                             \
+    for (pos = (type *)(head)->data;                                                    \
+         (uint8_t *)(pos) < (uint8_t *)(head)->data + (head)->size * (head)->type_size; \
+         pos++)
+
+
+bool mm_vector_init(mm_vector_t *self, uint16_t type_size, uint8_t *buff, size_t size);
+bool mm_vector_push(mm_vector_t *self, const void *buff, size_t size);
+size_t mm_vector_pop(mm_vector_t *self, void *buff, size_t size);
 size_t mm_vector_size(const mm_vector_t *self);
 size_t mm_vector_capacity(const mm_vector_t *self);
 bool mm_vector_resize(mm_vector_t *self, size_t new_size);
-uint8_t *mm_vector_data(const mm_vector_t *self);
+void *mm_vector_data(const mm_vector_t *self);
 void mm_vector_clear(mm_vector_t *self);
 bool mm_vector_is_empty(const mm_vector_t *self);
 bool mm_vector_get(const mm_vector_t *self, size_t index, void *buff, size_t size);

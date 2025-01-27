@@ -5,7 +5,7 @@ cwd = GetCurrentDir()
 src  = Glob('*.c')
 CPPPATH = [cwd]
 
-group = DefineGroup('mm_std', src, depend = [''], CPPPATH = CPPPATH)
+group = DefineGroup('third_party', src, depend = [''], CPPPATH = CPPPATH)
 
 list = os.listdir(cwd)
 for item in list:
