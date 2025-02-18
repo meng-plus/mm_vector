@@ -36,9 +36,9 @@ $(OBJDIR)/%.o: ../%.c
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET) $(OBJDIR)/*.o
 
-run:
+test:
 	$(TARGET)
 
-.PHONY: clean all run
+.PHONY: clean all test
 
 # end of Makefile
