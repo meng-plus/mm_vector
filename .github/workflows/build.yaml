@@ -1,30 +1,65 @@
-name: build and run test
+name: CI/CD Pipeline
 
 on:
   push:
-      branches:
-        - master
+    branches:
+      - master  # 更符合现代仓库规范的分支名
+    tags:
+      - 'v*.*.*'  # 符合语义化版本规范的标签触发正式发布
 
 jobs:
-  test-and-rebase:
+  build-test-publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 1 # 需要完整提交历史用于变基
+        fetch-depth: 0
+
+    - name: Setup environment
+      id: env
+      run: |
+        echo "BUILD_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+        # 如果是标签触发则提取版本号
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "VERSION=${VERSION/v/}" >> $GITHUB_ENV
+        fi
 
     - name: Install build tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential gcc make
+        sudo apt-get install -y build-essential gcc make tree
 
     - name: Run build
       run: |
         cd example
         make
 
-    - name: test project
+    - name: Test project
       run: |
         cd example
         make test
+        # 根据触发类型重命名产出文件
+        if [ -n "$VERSION" ]; then
+          mv build/demo_app.out "myapp-$VERSION-$BUILD_DATE.out"
+        else
+          mv build/demo_app.out "myapp-nightly-$BUILD_DATE-$SHORT_SHA.out"
+        fi
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.VERSION || format('nightly-{0}', env.BUILD_DATE) }}
+        name: ${{ format('{0} Build', env.VERSION || 'Nightly') }} (${{ env.BUILD_DATE }})
+        body: |
+          ${{ env.VERSION && format('**Stable Release**<br>Version: {0}', env.VERSION) || '**Nightly Build**<br>Automated daily build' }}
+          - Commit: [${{ env.SHORT_SHA }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+          - Build Date: ${{ env.BUILD_DATE }}
+        draft: false
+        prerelease: ${{ !env.VERSION }}
+        files: |
+            example/*.out
