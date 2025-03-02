@@ -1,7 +1,7 @@
 #include "mm_vector.h"
 #include <string.h>
 
-bool mm_vector_init(mm_vector_t *self, uint16_t type_size, uint8_t *buff, size_t size)
+bool mm_vector_init(mm_vector_t *self, uint16_t type_size, void *buff, size_t size)
 {
     if (!self || !buff || type_size == 0 || size == 0)
     {
@@ -101,7 +101,7 @@ bool mm_vector_delete(mm_vector_t *self, size_t index, void *buff, size_t size)
     {
         return false;
     }
-    memcpy(buff, self->data + index * self->type_size, size);
+    memcpy(buff, self->data + index * self->type_size, size * self->type_size);
     memmove(self->data + index * self->type_size, self->data + (index + size) * self->type_size, (self->size - index - size) * self->type_size);
     self->size -= size;
     return true;

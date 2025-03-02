@@ -30,7 +30,7 @@ typedef struct MM_VECTOR
          pos++)
 
 
-bool mm_vector_init(mm_vector_t *self, uint16_t type_size, uint8_t *buff, size_t size);
+bool mm_vector_init(mm_vector_t *self, uint16_t type_size, void *buff, size_t size);
 bool mm_vector_push(mm_vector_t *self, const void *buff, size_t size);
 size_t mm_vector_pop(mm_vector_t *self, void *buff, size_t size);
 size_t mm_vector_size(const mm_vector_t *self);

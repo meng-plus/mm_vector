@@ -36,7 +36,7 @@ $(OBJDIR)/%.o: ../%.c
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET) $(OBJDIR)/*.o
 
-test:
+test: $(TARGET)
 	$(TARGET)
 
 .PHONY: clean all test
